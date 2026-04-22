@@ -71,8 +71,8 @@ client = BinanceFuturesClient(api_key=KEY, api_secret=SECRET,
 ### Quick test with your own keys
 
 ```bash
-git clone <repo>
-cd trading_bot
+git clone https://github.com/KaminiShirode/binance-futures-bot.git
+cd binance-futures-bot
 pip install -r requirements.txt
 cp .env.example .env
 # add your keys to .env
@@ -88,7 +88,7 @@ python cli.py order --symbol ETHUSDT --side SELL --type LIMIT --quantity 0.1 --p
 ### 1. Install dependencies
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/binance-futures-bot.git
+git clone https://github.com/KaminiShirode/binance-futures-bot.git
 cd binance-futures-bot
 python -m venv venv
 source venv/bin/activate    # Windows: venv\Scripts\activate
@@ -178,92 +178,64 @@ python cli.py open-orders --symbol BTCUSDT
 ## Example Output
 
 ```
-┌─────────────────────────────────────────┐
-│           ORDER REQUEST SUMMARY          │
-├─────────────────────────────────────────┤
-│  Symbol     : BTCUSDT                   │
-│  Side       : BUY                       │
-│  Type       : MARKET                    │
-│  Quantity   : 0.01                      │
-│  Price      : —                         │
-│  Stop Price : —                         │
-└─────────────────────────────────────────┘
++-----------------------------------------+
+|           ORDER REQUEST SUMMARY          |
++-----------------------------------------+
+|  Symbol     : BTCUSDT                   |
+|  Side       : BUY                       |
+|  Type       : MARKET                    |
+|  Quantity   : 0.01                      |
+|  Price      : -                         |
+|  Stop Price : -                         |
++-----------------------------------------+
 
-┌─────────────────────────────────────────┐
-│           ORDER RESPONSE DETAILS         │
-├─────────────────────────────────────────┤
-│  Order ID    : 4068022516               │
-│  Symbol      : BTCUSDT                  │
-│  Side        : BUY                      │
-│  Type        : MARKET                   │
-│  Status      : FILLED                   │
-│  Orig Qty    : 0.01                     │
-│  Exec Qty    : 0.01                     │
-│  Avg Price   : 93456.70                 │
-└─────────────────────────────────────────┘
++-----------------------------------------+
+|           ORDER RESPONSE DETAILS         |
++-----------------------------------------+
+|  Order ID    : 4068022516               |
+|  Symbol      : BTCUSDT                  |
+|  Side        : BUY                      |
+|  Type        : MARKET                   |
+|  Status      : FILLED                   |
+|  Orig Qty    : 0.01                     |
+|  Exec Qty    : 0.01                     |
+|  Avg Price   : 93456.70                 |
++-----------------------------------------+
 
-✓  Order submitted successfully (status: FILLED)
+  order submitted successfully (status: FILLED)
 ```
 
 ---
 
 ## Logging
 
-Each run creates a new log file at `logs/trading_bot_<timestamp>.log`.
+Each run creates a timestamped log file in the `logs/` folder.
 
-- File logs: DEBUG level — full request/response details
-- Console: INFO level — just the important stuff
+- file: DEBUG level, full request and response details
+- console: INFO level, just the important stuff
 
-Signatures are always redacted in logs. Sample log files are in `logs/`.
+API signatures are always redacted. Sample log files are included in `logs/`.
 
 ---
 
-## How it's structured
+## Code Structure
 
-```
-cli.py → orders.py → validators.py
-                   → client.py
-```
+The code is split into four layers, each doing one thing:
 
 - `cli.py` — parses args, loads credentials, calls place_order()
-- `orders.py` — validates, calls the client, formats output
-- `validators.py` — just validation, no side effects
+- `orders.py` — validates inputs, calls the client, formats output
+- `validators.py` — input validation only, no side effects
 - `client.py` — signs requests, handles retries, parses errors
 
-Prices and quantities use `Decimal` internally to avoid floating point issues.
-Retries are configured for 429 and 5xx responses so it doesn't hammer the API.
+Prices and quantities are handled as `Decimal` internally to avoid floating point bugs.
+Retries cover 429 and 5xx so the bot handles flaky network conditions without hammering the API.
 
 ---
 
 ## Assumptions
 
-1. Testnet only — for production you'd change the base URL and test thoroughly
-2. All symbols are USDT-margined perpetuals
-3. One-way mode — uses positionSide=BOTH. Hedge mode needs LONG/SHORT
-4. Quantity precision is sent as-is — production would need to check exchangeInfo
-5. Limit prices aren't checked against the order book
-
----
-
-## Dependencies
-
-```
-requests>=2.31.0
-urllib3>=2.0.0
-```
-
-No SDK — direct REST calls so everything is transparent.
-
----
-
-## Possible Extensions
-
-- TWAP execution
-- Grid trading strategy
-- WebSocket price feed
-- Position manager with PnL tracking
-- Test suite with mocked responses
-- Docker support
-
----
-
+1. Testnet only — switching to production means changing the base URL and doing proper testing
+2. Assumes all symbols are USDT-margined perpetuals
+3. Uses one-way mode (positionSide=BOTH) — hedge mode users need to pass LONG/SHORT
+4. Quantity is sent as-is — production should fetch precision from exchangeInfo and round properly
+5. Limit prices aren't validated against the live order book
