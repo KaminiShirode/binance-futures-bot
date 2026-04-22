@@ -234,8 +234,8 @@ Retries cover 429 and 5xx so the bot handles flaky network conditions without ha
 
 ## Assumptions
 
-1. Testnet only — switching to production means changing the base URL and doing proper testing
-2. Assumes all symbols are USDT-margined perpetuals
-3. Uses one-way mode (positionSide=BOTH) — hedge mode users need to pass LONG/SHORT
-4. Quantity is sent as-is — production should fetch precision from exchangeInfo and round properly
-5. Limit prices aren't validated against the live order book
+1. Built for testnet only — production would need a different base URL and proper testing
+2. All symbols assumed to be USDT-margined perpetuals
+3. One-way mode only — hedge mode would need positionSide set to LONG or SHORT
+4. Quantity is sent as-is — production should round based on exchangeInfo precision
+5. Limit price is not checked against the live order book
